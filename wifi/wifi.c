@@ -614,6 +614,7 @@ int wifi_connect_to_supplicant()
 {
     char ifname[256];
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
+    int count = 25;
 
     /* Make sure supplicant is running */
     if (!property_get(SUPP_PROP_NAME, supp_status, NULL)
@@ -622,9 +623,15 @@ int wifi_connect_to_supplicant()
         return -1;
     }
 
-    if (access(IFACE_DIR, F_OK) == 0) {
-        snprintf(ifname, sizeof(ifname), "%s/%s", IFACE_DIR, iface);
-    } else {
+    while (count-- > 0) {
+        if (access(IFACE_DIR, F_OK) == 0) {
+            snprintf(ifname, sizeof(ifname), "%s/%s", IFACE_DIR, iface);
+            break;
+        }
+        usleep(100000);
+    }
+
+    if (count <= 0) {
         strlcpy(ifname, iface, sizeof(ifname));
     }
 
